@@ -15,6 +15,10 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 
 import com.magiceditor.file.MyFileOpened;
 
@@ -140,6 +144,46 @@ public class Util {
 	
 	public static ImageIcon loadToolBarIcon(String iconName){
 		return createImageIcon("icons/" + iconName, 15, 15);
+	}
+	
+	public static DefaultMutableTreeNode loadSystemNodes() {
+		
+		File root = new File(File.separator);
+		DefaultMutableTreeNode top = new DefaultMutableTreeNode(root.getAbsolutePath());
+		
+		for(File folder : root.listFiles()) {
+			if(folder.isDirectory() && folder.canRead()) {
+				DefaultMutableTreeNode child = new DefaultMutableTreeNode(folder.getName());
+				top.add(child);
+				try {
+					if(folder.listFiles().length > 0) {
+						child.add(new DefaultMutableTreeNode(folder.listFiles()[0].getName()));
+					}
+				}catch(NullPointerException e) {
+					//do nothing, because nullpointer here could mean a permission denied...
+					//removing folder:
+					((MutableTreeNode)child.getParent()).remove(child);
+				}
+			}
+		}
+		return top;
+	}
+	
+	private static void readSubFolders(DefaultMutableTreeNode root, File folder) {
+		try {
+			if(folder.isDirectory() && folder.canRead() && folder != null) {
+				for(File f : folder.listFiles()) {
+					if(f.isDirectory()) {
+						DefaultMutableTreeNode child = new DefaultMutableTreeNode(f.getName());
+						root.add(child);
+						readSubFolders(child, f);
+						
+					}
+				}
+			}
+		}catch(NullPointerException e) {
+			//do nothing, because nullpointer here could mean a permission denied...
+		}
 	}
 	
 	public static void handleError(String message) {
