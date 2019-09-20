@@ -1,14 +1,13 @@
 package com.magiceditor.helper;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.JFileChooser;
-import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -16,10 +15,18 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 import com.magiceditor.file.MyFileOpened;
 import com.magiceditor.gui.MagicMenu;
@@ -62,6 +69,8 @@ public class MainWindowHelper {
 		this.window.getToolBar().getBtnOpen().addActionListener(new OpenNewFileHandler());
 		this.window.getToolBar().getBtnSave().addActionListener(new  SaveFileHandler());
 		this.window.getToolBar().getBtnClose().addActionListener(new  CloseFileHandler());
+		this.window.getExplorer().addTreeSelectionListener(new TreeSelectionHandler());
+		this.window.getExplorer().addTreeWillExpandListener(new TreeExpansionHandler());
 		
 		//setting the filter to only accept text files:
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", Util.getInstance().loadFileFilter());
@@ -272,5 +281,45 @@ public class MainWindowHelper {
 				window.getTabbedPane().remove(fileSelectedIndex);
 			}
 		}
+	}
+	
+	class TreeSelectionHandler implements TreeSelectionListener{
+
+		@Override
+		public void valueChanged(TreeSelectionEvent e) {
+			
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode)
+                    ((JTree)e.getSource()).getLastSelectedPathComponent();
+			loadNodesToShow(node);
+		}
+	}
+	
+	class TreeExpansionHandler implements TreeWillExpandListener {
+
+		@Override
+		public void treeWillExpand(TreeExpansionEvent e) throws ExpandVetoException {
+			TreePath path = e.getPath();
+	        DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+	        loadNodesToShow(node);
+			
+		}
+
+		@Override
+		public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+			// TODO Auto-generated method stub
+			
+		}
+	}
+	
+	private void loadNodesToShow(DefaultMutableTreeNode node) {
+		if(node != null) {
+			String folderPath = "";
+			for(TreeNode n : node.getPath()) {
+				folderPath += n + File.separator;
+			}
+			System.out.println("selecionou: " + folderPath);
+			Util.readOnlySubFolders(node, new File(folderPath));
+			window.getExplorer().repaint();
+		}	
 	}
 }

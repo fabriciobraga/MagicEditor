@@ -3,8 +3,10 @@ package com.magiceditor.util;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,11 +17,10 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
+import com.magiceditor.file.ExtensionsFilter;
 import com.magiceditor.file.MyFileOpened;
 
 import lombok.Getter;
@@ -169,16 +170,22 @@ public class Util {
 		return top;
 	}
 	
-	public static void readSubFolders(DefaultMutableTreeNode root, File folder) {
+	public static void readOnlySubFolders(DefaultMutableTreeNode root, File folder) {
 		try {
+			root.removeAllChildren();
 			if(folder.isDirectory() && folder.canRead() && folder != null) {
-				for(File f : folder.listFiles()) {
-					if(f.isDirectory()) {
+				for(File f : folder.listFiles(new ExtensionsFilter())) {
+					//if(f.isDirectory()) {
 						DefaultMutableTreeNode child = new DefaultMutableTreeNode(f.getName());
 						root.add(child);
-						readSubFolders(child, f);
-						
-					}
+						try {
+							if(f.listFiles(new ExtensionsFilter()).length > 0) {
+								child.add(new DefaultMutableTreeNode(f.listFiles()[0].getName()));
+							}
+						}catch(NullPointerException e) {
+							//do nothing, because nullpointer here could mean a permission denied...
+						}
+					//}
 				}
 			}
 		}catch(NullPointerException e) {
@@ -186,27 +193,8 @@ public class Util {
 		}
 	}
 	
-	public static void readOnlySubFolders(DefaultMutableTreeNode root, File folder) {
-		try {
-			root.removeAllChildren();
-			if(folder.isDirectory() && folder.canRead() && folder != null) {
-				for(File f : folder.listFiles()) {
-					if(f.isDirectory()) {
-						DefaultMutableTreeNode child = new DefaultMutableTreeNode(f.getName());
-						root.add(child);
-						try {
-							if(f.listFiles().length > 0) {
-								child.add(new DefaultMutableTreeNode(f.listFiles()[0].getName()));
-							}
-						}catch(NullPointerException e) {
-							//do nothing, because nullpointer here could mean a permission denied...
-						}
-					}
-				}
-			}
-		}catch(NullPointerException e) {
-			//do nothing, because nullpointer here could mean a permission denied...
-		}
+	public static String[] getListOfFilesAccepted() {
+		return getInstance().getString("config.files.accepted").split(",");
 	}
 	
 	public static void handleError(String message) {
