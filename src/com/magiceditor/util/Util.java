@@ -169,7 +169,7 @@ public class Util {
 		return top;
 	}
 	
-	private static void readSubFolders(DefaultMutableTreeNode root, File folder) {
+	public static void readSubFolders(DefaultMutableTreeNode root, File folder) {
 		try {
 			if(folder.isDirectory() && folder.canRead() && folder != null) {
 				for(File f : folder.listFiles()) {
@@ -178,6 +178,29 @@ public class Util {
 						root.add(child);
 						readSubFolders(child, f);
 						
+					}
+				}
+			}
+		}catch(NullPointerException e) {
+			//do nothing, because nullpointer here could mean a permission denied...
+		}
+	}
+	
+	public static void readOnlySubFolders(DefaultMutableTreeNode root, File folder) {
+		try {
+			root.removeAllChildren();
+			if(folder.isDirectory() && folder.canRead() && folder != null) {
+				for(File f : folder.listFiles()) {
+					if(f.isDirectory()) {
+						DefaultMutableTreeNode child = new DefaultMutableTreeNode(f.getName());
+						root.add(child);
+						try {
+							if(f.listFiles().length > 0) {
+								child.add(new DefaultMutableTreeNode(f.listFiles()[0].getName()));
+							}
+						}catch(NullPointerException e) {
+							//do nothing, because nullpointer here could mean a permission denied...
+						}
 					}
 				}
 			}
