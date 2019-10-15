@@ -8,6 +8,7 @@ import java.io.File;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -17,6 +18,7 @@ import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 import com.magiceditor.file.MyFileOpened;
 import com.magiceditor.helper.MainWindowHelper;
@@ -126,7 +128,4 @@ public class MainWindow extends JFrame{
             return this;
         }
     }
-	
-	
-	
 }

@@ -119,7 +119,7 @@ public class Util {
 					//System.out.println("creating app data folder:" + appFolder.getAbsolutePath());
 					return appFolder;
 				}else {
-					handleError("We found a problem creating our base folder.");
+					handleError("We found a problem creating our base folder: " + System.getenv("LOCALAPPDATA") + File.separator + EditorConstants.APP_DATA_FOLDER);
 				}
 			}else {
 				return appFolder;
